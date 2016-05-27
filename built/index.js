@@ -8000,8 +8000,9 @@ var _user$project$Main$update = F2(
 		var _p0 = action;
 		switch (_p0.ctor) {
 			case 'Tick':
-				var newDate = _elm_lang$core$Date$fromTime(_p0._0);
-				var dayOfMonth = _elm_lang$core$Date$day(newDate);
+				var newDate = _p0._0;
+				var dayOfMonth = _elm_lang$core$Date$day(
+					_elm_lang$core$Date$fromTime(newDate));
 				var newModel = _elm_lang$core$Native_Utils.update(
 					model,
 					{day: dayOfMonth, date: newDate});
@@ -8036,19 +8037,39 @@ var _user$project$Main$update = F2(
 				};
 		}
 	});
+var _user$project$Main$setStorage = _elm_lang$core$Native_Platform.outgoingPort(
+	'setStorage',
+	function (v) {
+		return {day: v.day, date: v.date, ausgabe: v.ausgabe, sicherheit: v.sicherheit};
+	});
+var _user$project$Main$withSetStorage = function (_p1) {
+	var _p2 = _p1;
+	var _p3 = _p2._0;
+	return {
+		ctor: '_Tuple2',
+		_0: _p3,
+		_1: _elm_lang$core$Platform_Cmd$batch(
+			_elm_lang$core$Native_List.fromArray(
+				[
+					_user$project$Main$setStorage(_p3),
+					_p2._1
+				]))
+	};
+};
 var _user$project$Main$Model = F4(
 	function (a, b, c, d) {
 		return {day: a, date: b, ausgabe: c, sicherheit: d};
 	});
-var _user$project$Main$init = {
-	ctor: '_Tuple2',
-	_0: A4(
-		_user$project$Main$Model,
-		0,
-		_elm_lang$core$Date$fromTime(0),
-		0,
-		0),
-	_1: _elm_lang$core$Platform_Cmd$none
+var _user$project$Main$init = function (savedModel) {
+	var f = A2(_elm_lang$core$Debug$log, 'flags', savedModel);
+	return A2(
+		_elm_lang$core$Platform_Cmd_ops['!'],
+		A2(
+			_elm_lang$core$Maybe$withDefault,
+			A4(_user$project$Main$Model, 0, 0, 0, 0),
+			savedModel),
+		_elm_lang$core$Native_List.fromArray(
+			[]));
 };
 var _user$project$Main$ChangeSicherheit = function (a) {
 	return {ctor: 'ChangeSicherheit', _0: a};
@@ -8057,8 +8078,9 @@ var _user$project$Main$ChangeAusgabe = function (a) {
 	return {ctor: 'ChangeAusgabe', _0: a};
 };
 var _user$project$Main$view = function (model) {
-	var month = _elm_lang$core$Date$month(model.date);
-	var year = _elm_lang$core$Date$year(model.date);
+	var date = _elm_lang$core$Date$fromTime(model.date);
+	var year = _elm_lang$core$Date$year(date);
+	var month = _elm_lang$core$Date$month(date);
 	var daysThisMonth = _elm_lang$core$Basics$toFloat(
 		A2(_rluiten$elm_date_extra$Date_Extra_Core$daysInMonth, year, month));
 	var daysLeftThisMonth = daysThisMonth - _elm_lang$core$Basics$toFloat(model.day);
@@ -8138,8 +8160,47 @@ var _user$project$Main$subscriptions = function (model) {
 	return A2(_elm_lang$core$Time$every, _elm_lang$core$Time$second, _user$project$Main$Tick);
 };
 var _user$project$Main$main = {
-	main: _elm_lang$html$Html_App$program(
-		{init: _user$project$Main$init, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions, view: _user$project$Main$view})
+	main: _elm_lang$html$Html_App$programWithFlags(
+		{
+			init: _user$project$Main$init,
+			update: F2(
+				function (msg, model) {
+					return _user$project$Main$withSetStorage(
+						A2(_user$project$Main$update, msg, model));
+				}),
+			subscriptions: _user$project$Main$subscriptions,
+			view: _user$project$Main$view
+		}),
+	flags: _elm_lang$core$Json_Decode$oneOf(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+				A2(
+				_elm_lang$core$Json_Decode$map,
+				_elm_lang$core$Maybe$Just,
+				A2(
+					_elm_lang$core$Json_Decode$andThen,
+					A2(_elm_lang$core$Json_Decode_ops[':='], 'ausgabe', _elm_lang$core$Json_Decode$float),
+					function (ausgabe) {
+						return A2(
+							_elm_lang$core$Json_Decode$andThen,
+							A2(_elm_lang$core$Json_Decode_ops[':='], 'date', _elm_lang$core$Json_Decode$float),
+							function (date) {
+								return A2(
+									_elm_lang$core$Json_Decode$andThen,
+									A2(_elm_lang$core$Json_Decode_ops[':='], 'day', _elm_lang$core$Json_Decode$int),
+									function (day) {
+										return A2(
+											_elm_lang$core$Json_Decode$andThen,
+											A2(_elm_lang$core$Json_Decode_ops[':='], 'sicherheit', _elm_lang$core$Json_Decode$float),
+											function (sicherheit) {
+												return _elm_lang$core$Json_Decode$succeed(
+													{ausgabe: ausgabe, date: date, day: day, sicherheit: sicherheit});
+											});
+									});
+							});
+					}))
+			]))
 };
 
 var Elm = {};
