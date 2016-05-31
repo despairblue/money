@@ -7995,52 +7995,74 @@ var _rluiten$elm_date_extra$Date_Extra_Core$lastOfMonthDate = function (date) {
 };
 var _rluiten$elm_date_extra$Date_Extra_Core$epochDateStr = '1970-01-01T00:00:00Z';
 
+var _user$project$Main$calculateBalance = function (model) {
+	var date = _elm_lang$core$Date$fromTime(model.date);
+	var year = _elm_lang$core$Date$year(date);
+	var month = _elm_lang$core$Date$month(date);
+	var daysThisMonth = _elm_lang$core$Basics$toFloat(
+		A2(_rluiten$elm_date_extra$Date_Extra_Core$daysInMonth, year, month));
+	var day = _elm_lang$core$Date$day(date);
+	var daysLeftThisMonth = daysThisMonth - _elm_lang$core$Basics$toFloat(day);
+	var balance = ((daysLeftThisMonth / daysThisMonth) * model.livelihood) + model.safety;
+	return balance;
+};
+var _user$project$Main$beginningOfNextMonth = function (date) {
+	return _elm_lang$core$Date$toTime(
+		_rluiten$elm_date_extra$Date_Extra_Core$firstOfNextMonthDate(
+			_elm_lang$core$Date$fromTime(date)));
+};
 var _user$project$Main$update = F2(
 	function (action, model) {
 		var _p0 = action;
 		switch (_p0.ctor) {
 			case 'Tick':
 				var newDate = _p0._0;
-				var dayOfMonth = _elm_lang$core$Date$day(
-					_elm_lang$core$Date$fromTime(newDate));
 				var newModel = _elm_lang$core$Native_Utils.update(
 					model,
-					{day: dayOfMonth, date: newDate});
-				return {
-					ctor: '_Tuple2',
-					_0: A2(_elm_lang$core$Debug$log, 'model', newModel),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'ChangeAusgabe':
+					{date: newDate});
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					newModel,
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'ChangeLivelyhood':
 				var newAusgabeFloat = A2(
 					_elm_lang$core$Result$withDefault,
 					0,
 					_elm_lang$core$String$toFloat(_p0._0));
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
 						model,
-						{ausgabe: newAusgabeFloat}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			default:
+						{livelihood: newAusgabeFloat}),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			case 'ChangeSafety':
 				var newSicherheitFloat = A2(
 					_elm_lang$core$Result$withDefault,
 					0,
 					_elm_lang$core$String$toFloat(_p0._0));
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
 						model,
-						{sicherheit: newSicherheitFloat}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
+						{safety: newSicherheitFloat}),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
+			default:
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{receivedMoneyForNextMonth: _p0._0}),
+					_elm_lang$core$Native_List.fromArray(
+						[]));
 		}
 	});
 var _user$project$Main$setStorage = _elm_lang$core$Native_Platform.outgoingPort(
 	'setStorage',
 	function (v) {
-		return {day: v.day, date: v.date, ausgabe: v.ausgabe, sicherheit: v.sicherheit};
+		return {date: v.date, livelihood: v.livelihood, safety: v.safety, receivedMoneyForNextMonth: v.receivedMoneyForNextMonth};
 	});
 var _user$project$Main$withSetStorage = function (_p1) {
 	var _p2 = _p1;
@@ -8058,33 +8080,36 @@ var _user$project$Main$withSetStorage = function (_p1) {
 };
 var _user$project$Main$Model = F4(
 	function (a, b, c, d) {
-		return {day: a, date: b, ausgabe: c, sicherheit: d};
+		return {date: a, livelihood: b, safety: c, receivedMoneyForNextMonth: d};
 	});
 var _user$project$Main$init = function (savedModel) {
-	var f = A2(_elm_lang$core$Debug$log, 'flags', savedModel);
-	return A2(
-		_elm_lang$core$Platform_Cmd_ops['!'],
-		A2(
-			_elm_lang$core$Maybe$withDefault,
-			A4(_user$project$Main$Model, 0, 0, 0, 0),
-			savedModel),
-		_elm_lang$core$Native_List.fromArray(
-			[]));
+	var _p4 = savedModel;
+	if (_p4.ctor === 'Just') {
+		return {ctor: '_Tuple2', _0: _p4._0, _1: _elm_lang$core$Platform_Cmd$none};
+	} else {
+		return {
+			ctor: '_Tuple2',
+			_0: A4(_user$project$Main$Model, 0, 0, 0, false),
+			_1: _elm_lang$core$Platform_Cmd$none
+		};
+	}
 };
-var _user$project$Main$ChangeSicherheit = function (a) {
-	return {ctor: 'ChangeSicherheit', _0: a};
+var _user$project$Main$ChangeReceivedMoneyForNextMonth = function (a) {
+	return {ctor: 'ChangeReceivedMoneyForNextMonth', _0: a};
 };
-var _user$project$Main$ChangeAusgabe = function (a) {
-	return {ctor: 'ChangeAusgabe', _0: a};
+var _user$project$Main$ChangeSafety = function (a) {
+	return {ctor: 'ChangeSafety', _0: a};
+};
+var _user$project$Main$ChangeLivelyhood = function (a) {
+	return {ctor: 'ChangeLivelyhood', _0: a};
 };
 var _user$project$Main$view = function (model) {
-	var date = _elm_lang$core$Date$fromTime(model.date);
-	var year = _elm_lang$core$Date$year(date);
-	var month = _elm_lang$core$Date$month(date);
-	var daysThisMonth = _elm_lang$core$Basics$toFloat(
-		A2(_rluiten$elm_date_extra$Date_Extra_Core$daysInMonth, year, month));
-	var daysLeftThisMonth = daysThisMonth - _elm_lang$core$Basics$toFloat(model.day);
-	var balance = ((daysLeftThisMonth / daysThisMonth) * model.ausgabe) + model.sicherheit;
+	var balance = model.receivedMoneyForNextMonth ? (_user$project$Main$calculateBalance(model) + _user$project$Main$calculateBalance(
+		_elm_lang$core$Native_Utils.update(
+			model,
+			{
+				date: _user$project$Main$beginningOfNextMonth(model.date)
+			}))) : _user$project$Main$calculateBalance(model);
 	return A2(
 		_elm_lang$html$Html$div,
 		_elm_lang$core$Native_List.fromArray(
@@ -8111,14 +8136,14 @@ var _user$project$Main$view = function (model) {
 							[]),
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html$text('Ausgabe: '),
+								_elm_lang$html$Html$text('Livelihood: '),
 								A2(
 								_elm_lang$html$Html$input,
 								_elm_lang$core$Native_List.fromArray(
 									[
 										_elm_lang$html$Html_Attributes$value(
-										_elm_lang$core$Basics$toString(model.ausgabe)),
-										_elm_lang$html$Html_Events$onInput(_user$project$Main$ChangeAusgabe)
+										_elm_lang$core$Basics$toString(model.livelihood)),
+										_elm_lang$html$Html_Events$onInput(_user$project$Main$ChangeLivelyhood)
 									]),
 								_elm_lang$core$Native_List.fromArray(
 									[]))
@@ -8136,14 +8161,39 @@ var _user$project$Main$view = function (model) {
 							[]),
 						_elm_lang$core$Native_List.fromArray(
 							[
-								_elm_lang$html$Html$text('Sicherheit: '),
+								_elm_lang$html$Html$text('Safety: '),
 								A2(
 								_elm_lang$html$Html$input,
 								_elm_lang$core$Native_List.fromArray(
 									[
 										_elm_lang$html$Html_Attributes$value(
-										_elm_lang$core$Basics$toString(model.sicherheit)),
-										_elm_lang$html$Html_Events$onInput(_user$project$Main$ChangeSicherheit)
+										_elm_lang$core$Basics$toString(model.safety)),
+										_elm_lang$html$Html_Events$onInput(_user$project$Main$ChangeSafety)
+									]),
+								_elm_lang$core$Native_List.fromArray(
+									[]))
+							]))
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						A2(
+						_elm_lang$html$Html$label,
+						_elm_lang$core$Native_List.fromArray(
+							[]),
+						_elm_lang$core$Native_List.fromArray(
+							[
+								_elm_lang$html$Html$text('Money for next month already recieved: '),
+								A2(
+								_elm_lang$html$Html$input,
+								_elm_lang$core$Native_List.fromArray(
+									[
+										_elm_lang$html$Html_Attributes$type$('checkbox'),
+										_elm_lang$html$Html_Attributes$checked(model.receivedMoneyForNextMonth),
+										_elm_lang$html$Html_Events$onCheck(_user$project$Main$ChangeReceivedMoneyForNextMonth)
 									]),
 								_elm_lang$core$Native_List.fromArray(
 									[]))
@@ -8180,22 +8230,22 @@ var _user$project$Main$main = {
 				_elm_lang$core$Maybe$Just,
 				A2(
 					_elm_lang$core$Json_Decode$andThen,
-					A2(_elm_lang$core$Json_Decode_ops[':='], 'ausgabe', _elm_lang$core$Json_Decode$float),
-					function (ausgabe) {
+					A2(_elm_lang$core$Json_Decode_ops[':='], 'date', _elm_lang$core$Json_Decode$float),
+					function (date) {
 						return A2(
 							_elm_lang$core$Json_Decode$andThen,
-							A2(_elm_lang$core$Json_Decode_ops[':='], 'date', _elm_lang$core$Json_Decode$float),
-							function (date) {
+							A2(_elm_lang$core$Json_Decode_ops[':='], 'livelihood', _elm_lang$core$Json_Decode$float),
+							function (livelihood) {
 								return A2(
 									_elm_lang$core$Json_Decode$andThen,
-									A2(_elm_lang$core$Json_Decode_ops[':='], 'day', _elm_lang$core$Json_Decode$int),
-									function (day) {
+									A2(_elm_lang$core$Json_Decode_ops[':='], 'receivedMoneyForNextMonth', _elm_lang$core$Json_Decode$bool),
+									function (receivedMoneyForNextMonth) {
 										return A2(
 											_elm_lang$core$Json_Decode$andThen,
-											A2(_elm_lang$core$Json_Decode_ops[':='], 'sicherheit', _elm_lang$core$Json_Decode$float),
-											function (sicherheit) {
+											A2(_elm_lang$core$Json_Decode_ops[':='], 'safety', _elm_lang$core$Json_Decode$float),
+											function (safety) {
 												return _elm_lang$core$Json_Decode$succeed(
-													{ausgabe: ausgabe, date: date, day: day, sicherheit: sicherheit});
+													{date: date, livelihood: livelihood, receivedMoneyForNextMonth: receivedMoneyForNextMonth, safety: safety});
 											});
 									});
 							});
